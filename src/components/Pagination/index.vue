@@ -60,22 +60,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits();
-const currentPage = computed({
-  get() {
-    return props.page
-  },
-  set(val) {
-    emit('update:page', val)
-  }
-})
-const pageSize = computed({
-  get() {
-    return props.limit
-  },
-  set(val){
-    emit('update:limit', val)
-  }
-})
+const currentPage = ref(props.page)
+const pageSize = ref(props.limit)
 function handleSizeChange(val) {
   if (currentPage.value * val > props.total) {
     currentPage.value = 1

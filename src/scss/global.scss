@@ -1,0 +1,356 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.margin0px {
+  margin: 0 !important;
+}
+
+.padding0px {
+  padding: 0 !important;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.fl {
+  float: left;
+}
+
+.fr {
+  float: right;
+}
+
+/* 清除浮动 */
+.clearfix:after {
+  content: "";
+  display: block;
+  visibility: hidden;
+  clear: both;
+  height: 0;
+}
+
+.clearfix {
+  /* 为了照顾ie6浏览器*/
+  zoom: 1;
+}
+
+.lineHeight28px {
+  line-height: 28px !important;
+}
+
+.lineHeight32px {
+  line-height: 32px !important;
+}
+
+.lineHeight40px {
+  line-height: 40px !important;
+}
+
+/* 更改 elemtui table 的默认样式 */
+.el-table td,
+.el-table th {
+  padding: 10px 0 !important;
+}
+
+.has-gutter th,
+.el-table__fixed-header-wrapper tr th {
+  background: rgba(68, 81, 176, 0.08) !important;
+  /* color: #47a1fc; */
+}
+
+.content {
+  padding: 20px 5%;
+}
+
+.v-step {
+  z-index: 9999;
+}
+
+.contentHeader {
+  line-height: 40px;
+  border-bottom: 1px solid #aaa;
+  padding-bottom: 10px;
+}
+
+.invalidColor {
+  color: #ccc;
+}
+
+.warnColor {
+  color: #E6A23C;
+}
+
+.successColor {
+  color: #67C23A;
+}
+
+.failColor {
+  color: #F56C6C;
+}
+
+.pageWrap {
+  position: relative;
+  min-height: 500px;
+  background: #fff;
+  padding: 20px 50px;
+}
+
+.positionClass {
+  position: absolute;
+  bottom: 25px;
+  right: 10%
+}
+
+/* 修改 elementUI 弹框的头部样式 */
+.el-dialog__header .el-dialog__title {
+  display: block;
+  font-size: 20px;
+  border-bottom: 1px solid #bbbbbb;
+  padding-bottom: 10px;
+  font-weight: bold;
+}
+
+.el-dialog__body {
+  padding: 10px 20px 20px;
+}
+
+/* 文字超出部分显示省略号 */
+.overHide {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fontcolor {
+  /*提示语:字的颜色*/
+  color: #ff9800;
+}
+
+.contain {
+  width: 1200px;
+  box-sizing: border-box;
+  margin: auto;
+  position: relative;
+}
+
+.contain1 {
+  width: 100%;
+  box-sizing: border-box;
+  display: inline-block;
+  padding: 0 10%;
+}
+
+.subpageContain {
+  padding: 40px 10%;
+}
+
+/*超出一行显示省略号*/
+.ellipsis1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  word-break: break-all;
+}
+
+/*超出两行显示省略号*/
+.ellipsis2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-all;
+}
+
+/* 自定义table样式 */
+.customTable {
+  width: 100%;
+  font-size: 14px;
+  border-spacing: 0;
+  text-align: center;
+  border: 1px solid #EBEEF5;
+  border-bottom: none;
+}
+
+.customTable thead {
+  background: #f1f1f9;
+  color: #919399;
+}
+
+.customTable tr th,
+.customTable tr td {
+  padding: 4px 5px;
+  border-right: 1px solid #EBEEF5;
+  border-bottom: 1px solid #EBEEF5;
+  line-height: 32px;
+}
+
+.customTable tr th:last-child,
+.customTable tr td:last-child {
+  border-right: none;
+}
+
+/* 表格背景色 */
+.customTable .customTableColor {
+  background: #bbb;
+}
+
+.tableContent {
+  border: 1px solid #EBEEF5;
+  border-top: none;
+  border-bottom: none;
+  box-sizing: border-box;
+}
+
+/* table表格无数据样式 */
+.emptyIcon {
+  width: 100px;
+  margin: 0 auto;
+  margin-top: 80px;
+  height: auto;
+  content: url(../src/assets/img/file.png);
+}
+
+/* 修改 element-ui 的 form 表单组件的间距 */
+.el-form-item {
+  /* margin-bottom: 10px; */
+}
+
+.el-form--label-top .el-form-item__label {
+  padding: 0;
+}
+
+/* input框添加外阴影 */
+.el-input__inner:focus {
+  box-shadow: 0 0 3px 0 #409EFF;
+}
+
+
+/*---滚动条默认显示样式--*/
+::-webkit-scrollbar-thumb {
+  background-color: rgba(144, 147, 153, .3);
+  height: 50px;
+  outline-offset: -2px;
+  outline: 2px solid #fff;
+  -webkit-border-radius: 4px;
+  border: 2px solid #fff;
+}
+
+
+/*---滚动条大小--*/
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/*---滚动框背景样式--*/
+::-webkit-scrollbar-track-piece {
+  background-color: #fff;
+  -webkit-border-radius: 0;
+}
+
+/*---鼠标点击滚动条显示样式--*/
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(144, 147, 153, .8);
+  height: 50px;
+  -webkit-border-radius: 4px;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+
+.flex {
+  $n: 10;
+
+  display: flex;
+
+  @for $i from 1 through $n {
+    &-#{$i} {
+      flex: $i;
+    }
+  }
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-center {
+  align-items: center;
+}
+
+.flex-end {
+  align-items: flex-end;
+}
+
+@for $i from 1 through 30 {
+  .ml#{$i*5}px {
+    margin-left: #{$i * 5}px !important;
+  }
+
+  .mt#{$i*5}px {
+    margin-top: #{$i * 5}px !important;
+  }
+
+  .mb#{$i*5}px {
+    margin-bottom: #{$i * 5}px !important;
+  }
+
+  .mr#{$i*5}px {
+    margin-right: #{$i * 5}px !important;
+  }
+
+  .mb#{$i*5}px {
+    padding-bottom: #{$i * 5}px !important;
+  }
+
+  .pl#{$i*5}px {
+    padding-left: #{$i * 5}px !important;
+  }
+
+  .pt#{$i*5}px {
+    padding-top: #{$i * 5}px !important;
+  }
+
+  .pr#{$i*5}px {
+    padding-right: #{$i * 5}px !important;
+  }
+
+  .pb#{$i*5}px {
+    padding-bottom: #{$i * 5}px !important;
+  }
+
+  .fz#{$i*2}px {
+    font-size: #{$i * 2}px !important;
+  }
+
+  .w#{$i*5} {
+    width: #{$i * 5%} !important;
+  }
+}

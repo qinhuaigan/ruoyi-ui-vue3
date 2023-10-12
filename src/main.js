@@ -6,6 +6,7 @@ import ElementPlus from 'element-plus'
 import locale from 'element-plus/lib/locale/lang/zh-cn' // 中文语言
 
 import '@/assets/styles/index.scss' // global css
+import '@/scss/global.css'
 import App from './App'
 import store from './store'
 import router from './router'
@@ -13,7 +14,7 @@ import directive from './directive' // directive
 
 // 注册指令
 import plugins from './plugins' // plugins
-import { download } from '@/utils/request'
+import requestApi from '@/utils/request'
 
 // svg图标
 import 'virtual:svg-icons-register'
@@ -25,6 +26,9 @@ import './permission' // permission control
 import { useDict } from '@/utils/dict'
 import { getConfigKey, updateConfigByKey } from "@/api/system/config";
 import { parseTime, resetForm, addDateRange, handleTree, selectDictLabel, selectDictLabels } from '@/utils/ruoyi'
+
+// 引入工具类
+import toolsApi from '@/utils/tools'
 
 // 分页组件
 import Pagination from '@/components/Pagination'
@@ -49,13 +53,15 @@ const app = createApp(App)
 app.config.globalProperties.useDict = useDict
 app.config.globalProperties.getConfigKey = getConfigKey
 app.config.globalProperties.updateConfigByKey = updateConfigByKey
-app.config.globalProperties.download = download
+app.config.globalProperties.download = requestApi.download
 app.config.globalProperties.parseTime = parseTime
 app.config.globalProperties.resetForm = resetForm
 app.config.globalProperties.handleTree = handleTree
 app.config.globalProperties.addDateRange = addDateRange
 app.config.globalProperties.selectDictLabel = selectDictLabel
 app.config.globalProperties.selectDictLabels = selectDictLabels
+app.config.globalProperties.fileBase = import.meta.env.VITE_APP_FILE_BASE // 文件基础路径
+app.config.globalProperties.getFilePath = toolsApi.getFilePath
 
 // 全局组件挂载
 app.component('DictTag', DictTag)
