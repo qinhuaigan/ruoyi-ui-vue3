@@ -46,6 +46,10 @@ import ImagePreview from "@/components/ImagePreview"
 import TreeSelect from '@/components/TreeSelect'
 // 字典标签组件
 import DictTag from '@/components/DictTag'
+// table 列表组件
+import tableList from '@/components/tableList'
+// search 搜索栏组件
+import search from '@/components/search'
 
 const app = createApp(App)
 
@@ -73,6 +77,8 @@ app.component('ImageUpload', ImageUpload)
 app.component('ImagePreview', ImagePreview)
 app.component('RightToolbar', RightToolbar)
 app.component('Editor', Editor)
+app.component('tableList', tableList)
+app.component('search', search)
 
 app.use(router)
 app.use(store)

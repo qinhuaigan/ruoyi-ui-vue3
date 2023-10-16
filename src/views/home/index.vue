@@ -5,7 +5,6 @@
 </template>
 
 <script setup>
-import myForm from '@/components/form'
 import { ref } from 'vue';
 const proxy = {}
 const list = [{

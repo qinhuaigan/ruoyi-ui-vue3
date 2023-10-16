@@ -15,7 +15,7 @@ function getFilePath(url) {
  * 深拷贝
  * @ 使用递归的方式实现数组、对象的深拷贝
  */
-function deepClone() {
+export function deepClone() {
   let objClone = Array.isArray(obj) ? [] : {};
   if (obj && typeof obj === "object") {
     for (let key in obj) {
@@ -36,7 +36,7 @@ function deepClone() {
 /**
  * 字符串转 base64
  */
-function encode(str) {
+export function encode(str) {
   // 对字符串进行编码
   const encode = encodeURI(str);
   // 对编码的字符串转化base64
@@ -48,7 +48,7 @@ function encode(str) {
  * loading 方法
  * @param {string} msg 提示文字
  */
-function showLoading(msg = "请稍后...") {
+export function showLoading(msg = "请稍后...") {
   loadingInstance = ElLoading.service({
     fullscreen: true,
     background: "rgb(0, 0, 0, 0.7)",
@@ -58,7 +58,7 @@ function showLoading(msg = "请稍后...") {
 /**
  * 关闭 loading
  */
-function hideLoading() {
+export function hideLoading() {
   loadingInstance && loadingInstance.close()
 }
 
@@ -67,7 +67,7 @@ function hideLoading() {
  * @param {string} message 消息内容
  * @param {string} type 提示类型：warning, success, info, error
  */
-function showMsg(message, type = 'warning') {
+export function showMsg(message, type = 'warning') {
   ElMessage({
     message,
     type,
@@ -75,11 +75,4 @@ function showMsg(message, type = 'warning') {
   })
 }
 
-export default {
-  getFilePath,
-  deepClone,
-  encode,
-  showLoading,
-  hideLoading,
-  showMsg
-}
+export default getFilePath
