@@ -5,5 +5,9 @@ module.exports = {
   trailingComma: "none",
   // 省略箭头函数括号
   arrowParens: "avoid",
-  printWidth: 300
+  printWidth: 300,
+  // 是否为单引号
+  singleQuote: true,
+  // 在所有代码语句的末尾添加分号
+  semi: false
 };

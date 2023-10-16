@@ -71,6 +71,8 @@
  *    btnAlign: 'left' // 按钮列对齐方式：left, center, right
  *    btnBlock: false // 每个按钮是否独占一行
  *    showPage: false // 是否显示分页组件
+ * 组件事件
+ * @pageChange(pageNum, pageSize) // 切换分页，pageNum：当前页；pageSize：每页条数
  */
 import { watch } from "vue";
 import useGetGlobalProperties from "@/hooks/useGlobal";
