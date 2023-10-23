@@ -24,14 +24,14 @@
         <template #default="scope">
           <div class="flex flex-wrap btns" v-if="!props.btnBlock">
             <div class="mr10px mt10px" v-for="(btn, i) in props.btns" :key="i">
-              <el-tooltip class="box-item" effect="dark" :content="btn.tooltip || btn.text">
+              <el-tooltip class="box-item" v-if="showBtn(scope.row, btn)" effect="dark" :content="btn.tooltip || btn.text">
                 <el-button :icon="btn.icon" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
               </el-tooltip>
             </div>
           </div>
           <div class="btns" v-else>
             <div class="mt10px" v-for="(btn, i) in props.btns" :key="i">
-              <el-tooltip class="box-item" effect="dark" :content="btn.tooltip || btn.text">
+              <el-tooltip class="box-item" v-if="showBtn(scope.row, btn)" effect="dark" :content="btn.tooltip || btn.text">
                 <el-button :icon="btn.icon" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
               </el-tooltip>
             </div>
@@ -58,6 +58,7 @@
  *
  *    tableData: [{
  *      status: '成功',
+ *      hiddenBtns: [], // 隐藏的按钮组，通过 text 和 tooltip 字段匹配
  *      style: { // 自定义样式，本组件已内置样式：success, fail, warning, info
  *        status: 'success' // 对应 title 中的 prop 字段
  *      }
@@ -198,6 +199,17 @@ watch(
     tableChange()
   }
 )
+
+/**
+ * 是否显示操作按钮，单条数据的各按钮显示设置
+ * @param {object} row 数据
+ * @param {object} btn 按钮信息
+*/
+function showBtn(row, btn) {
+  const data = toRaw(row)
+  const result = !data.hiddenBtns || (!data.hiddenBtns.includes(btn.text) && !data.hiddenBtns.includes(btn.tooltip))
+  return result
+}
 
 /**
  * 表格选择变化
