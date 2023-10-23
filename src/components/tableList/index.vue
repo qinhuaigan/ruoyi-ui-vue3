@@ -1,7 +1,8 @@
 <template>
   <div id="tableList">
-    <el-table :data="props.tableData" style="width: 100%">
-      <el-table-column type="index" label="#" :align="align" />
+    <el-table ref="myTableRef" :data="props.tableData" style="width: 100%" @select="selectChange" @select-all="selectChange">
+      <el-table-column v-if="multiple" type="selection" width="55" />
+      <el-table-column v-if="!hideIndex" type="index" label="#" :align="align" />
       <el-table-column :align="title.align || align" :label="title.label" v-for="(title, i) in props.title" :width="title.width" :key="i">
         <template #default="scope">
           <el-image fit="cover" style="width: 100%; height: 80px" :src="getFilePath(scope.row[title.prop])" v-if="title.type === 'image'">
@@ -13,19 +14,26 @@
               </div>
             </template>
           </el-image>
-          <div v-else v-html="scope.row[title.prop]" :style="color[scope.row.style ? scope.row.style[title.prop] : '']"></div>
+          <div v-else-if="showAll" v-html="scope.row[title.prop]" :style="color[scope.row.style ? scope.row.style[title.prop] : '']"></div>
+          <el-tooltip raw-content v-else class="box-item" effect="dark" :content="scope.row[title.prop]" placement="top-start">
+            <div class="overHide" v-html="scope.row[title.prop]" :style="color[scope.row.style ? scope.row.style[title.prop] : '']"></div>
+          </el-tooltip>
         </template>
       </el-table-column>
       <el-table-column type="index" :width="btnsWidth" label="操作" :align="btnAlign || align" v-if="props.btns.length > 0">
         <template #default="scope">
           <div class="flex flex-wrap btns" v-if="!props.btnBlock">
-            <div class="mr10px" v-for="(btn, i) in props.btns" :key="i">
-              <el-button class="mt10px" :icon="btn.icon" size="small" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
+            <div class="mr10px mt10px" v-for="(btn, i) in props.btns" :key="i">
+              <el-tooltip class="box-item" effect="dark" :content="btn.tooltip || btn.text">
+                <el-button :icon="btn.icon" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
+              </el-tooltip>
             </div>
           </div>
           <div class="btns" v-else>
             <div class="mt10px" v-for="(btn, i) in props.btns" :key="i">
-              <el-button :icon="btn.icon" size="small" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
+              <el-tooltip class="box-item" effect="dark" :content="btn.tooltip || btn.text">
+                <el-button :icon="btn.icon" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
+              </el-tooltip>
             </div>
           </div>
         </template>
@@ -34,13 +42,13 @@
         <el-empty description="空数据" />
       </template>
     </el-table>
-    <pagination v-if="props.showPage" :total="props.total" :limit="props.pageSize" :page="props.pageNum" @pagination="pageChange"></pagination>
+    <pagination v-if="showPage" :total="queryParams.total" v-model:page="queryParams.page" v-model:limit="queryParams.limit" @pagination="pageChange" />
   </div>
 </template>
 
 <script setup>
 /**
- * tabel 组件
+ * tabel 组件，默认列超出内容用 ... 代替
  * 接收参数：
  *    title：[{
  *      label: '标题名称'
@@ -54,7 +62,9 @@
  *        status: 'success' // 对应 title 中的 prop 字段
  *      }
  *    }] // 列表数据
- *
+ *    multiple: false, // 是否显示多选
+ *    hideIndex: false, // 是否隐藏序号
+ *    showAll: false, // 列超出内容是否换行显示
  *    pageNum: 1 // 当前页
  *    total: 0 // 列表数据总条数
  *    pageSize: 10 // 每页显示条数
@@ -73,22 +83,35 @@
  *    showPage: false // 是否显示分页组件
  * 组件事件
  * @pageChange(pageNum, pageSize) // 切换分页，pageNum：当前页；pageSize：每页条数
+ * @select(selection, row) // 表格选中事件，selection：当前 table 选中的数据集合, row：触发选中事件的 "数据项"
  */
-import { watch } from "vue";
-import useGetGlobalProperties from "@/hooks/useGlobal";
-import pagination from "@/components/Pagination";
-const { getFilePath } = useGetGlobalProperties();
+import { getCurrentInstance, reactive, ref, toRaw, watch } from 'vue'
+import useGetGlobalProperties from '@/hooks/useGlobal'
+// import pagination from "@/components/Pagination";
+const { getFilePath } = useGetGlobalProperties()
 const props = defineProps({
+  multiple: {
+    type: Boolean,
+    default: false
+  },
+  hideIndex: {
+    type: Boolean,
+    default: false
+  },
+  showAll: {
+    type: Boolean,
+    default: false
+  },
   tableData: {
     type: Array,
     default: () => {
-      return [];
+      return []
     }
   },
   title: {
     type: Array,
     default: () => {
-      return [];
+      return []
     }
   },
   pageNum: {
@@ -97,21 +120,21 @@ const props = defineProps({
   },
   align: {
     type: String,
-    default: "left"
+    default: 'left'
   },
   btns: {
     type: Array,
     default: () => {
-      return [];
+      return []
     }
   },
   btnsWidth: {
     type: String,
-    default: "180px"
+    default: '180px'
   },
   btnAlign: {
     type: String,
-    default: "left"
+    default: 'left'
   },
   btnBlock: {
     type: Boolean,
@@ -129,26 +152,72 @@ const props = defineProps({
     type: Number,
     default: 10
   }
-});
+})
 const color = reactive({
-  success: "color:#67C23A;",
-  fail: "color:#F56C6C;",
-  warning: "color:#E6A23C;",
-  info: "color:#909399;"
-});
-
-const emit = defineEmits(["handClick", "pageChange"]);
+  success: 'color:#67C23A;',
+  fail: 'color:#F56C6C;',
+  warning: 'color:#E6A23C;',
+  info: 'color:#909399;'
+})
+const queryParams = reactive({
+  page: props.pageNum,
+  limit: props.pageSize,
+  total: props.total
+})
+const { proxy } = getCurrentInstance()
+const emit = defineEmits(['handClick', 'pageChange', 'select'])
 
 onMounted(() => {
   // 组件挂载
-});
+})
+
+watch(
+  () => props.total,
+  val => {
+    queryParams.total = val
+  }
+)
+
+watch(
+  () => props.pageSize,
+  val => {
+    queryParams.limit = val
+  }
+)
+
+watch(
+  () => props.pageNum,
+  val => {
+    queryParams.page = val
+  }
+)
 
 watch(
   () => props.tableData,
   (val, oldVal) => {
-    tableChange();
+    tableChange()
   }
-);
+)
+
+/**
+ * 表格选择变化
+ * @param {array} selection table 当前选中的数据集合
+ * @param {array} row 当前选中的行
+ */
+function selectChange(selection, row) {
+  const arr = toRaw(selection)
+  const data = toRaw(row)
+  emit('select', arr, data)
+}
+
+/**
+ * 获取 table 当前选中的数据集合
+ */
+function getSelectData() {
+  const selection = proxy.$refs.myTableRef.getSelectionRows
+  const arr = toRaw(selection)
+  return arr
+}
 
 /**
  * 表单内容更新
@@ -162,17 +231,21 @@ function tableChange() {}
  * @param {number} index 下标
  */
 function handClick(btn, data, index, scope) {
-  emit("handClick", btn.fun, data, index);
+  emit('handClick', btn.fun, data, index)
 }
 
 /**
  * 分页变化
  * @param {number} param0.page 当前页
  * @param {number} param0.limit 分页条数
-*/
-function pageChange({page, limit}) {
+ */
+function pageChange({ page, limit }) {
   emit('pageChange', page, limit)
 }
+
+defineExpose({
+  getSelectData
+})
 </script>
 <style lang="scss" scoped>
 .btns {

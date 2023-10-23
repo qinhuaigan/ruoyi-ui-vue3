@@ -28,7 +28,7 @@ import { getConfigKey, updateConfigByKey } from "@/api/system/config";
 import { parseTime, resetForm, addDateRange, handleTree, selectDictLabel, selectDictLabels } from '@/utils/ruoyi'
 
 // 引入工具类
-import toolsApi from '@/utils/tools'
+import { getFilePath, showMsg, deepClone } from '@/utils/tools'
 
 // 分页组件
 import Pagination from '@/components/Pagination'
@@ -65,8 +65,11 @@ app.config.globalProperties.addDateRange = addDateRange
 app.config.globalProperties.selectDictLabel = selectDictLabel
 app.config.globalProperties.selectDictLabels = selectDictLabels
 app.config.globalProperties.fileBase = import.meta.env.VITE_APP_FILE_BASE // 文件基础路径
-app.config.globalProperties.getFilePath = toolsApi.getFilePath
+app.config.globalProperties.getFilePath = getFilePath
 app.config.globalProperties.uploadUrl = `${import.meta.env.VITE_APP_FILE_BASE}/file/upload` // 文件上传接口
+app.config.globalProperties.getFilePath = getFilePath
+app.config.globalProperties.showMsg = showMsg
+app.config.globalProperties.deepClone = deepClone
 
 // 全局组件挂载
 app.component('DictTag', DictTag)
