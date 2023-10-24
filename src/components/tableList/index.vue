@@ -86,7 +86,7 @@
  * @pageChange(pageNum, pageSize) // 切换分页，pageNum：当前页；pageSize：每页条数
  * @select(selection, row) // 表格选中事件，selection：当前 table 选中的数据集合, row：触发选中事件的 "数据项"
  */
-import { getCurrentInstance, reactive, ref, toRaw, watch } from 'vue'
+import { getCurrentInstance, reactive, ref, toRaw, toRefs, watch } from 'vue'
 import useGetGlobalProperties from '@/hooks/useGlobal'
 // import pagination from "@/components/Pagination";
 const { getFilePath } = useGetGlobalProperties()
@@ -217,7 +217,10 @@ function showBtn(row, btn) {
  * @param {array} row 当前选中的行
  */
 function selectChange(selection, row) {
-  const arr = toRaw(selection)
+  const arr = selection.reduce((total, item) => {
+    total.push(toRaw(item))
+    return total
+  }, [])
   const data = toRaw(row)
   emit('select', arr, data)
 }
@@ -226,8 +229,11 @@ function selectChange(selection, row) {
  * 获取 table 当前选中的数据集合
  */
 function getSelectData() {
-  const selection = proxy.$refs.myTableRef.getSelectionRows
-  const arr = toRaw(selection)
+  const selection = proxy.$refs.myTableRef.getSelectionRows()
+  const arr = selection.reduce((total, item) => {
+    total.push(toRaw(item))
+    return total
+  }, [])
   return arr
 }
 

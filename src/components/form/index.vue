@@ -14,7 +14,7 @@
             <el-select class="w100" v-else-if="item.type === 'select'" v-model="formData[item.prop]" :placeholder="`请输入${item.label}`">
               <el-option v-for="(option, j) in item.options" :key="j" :label="option.label" :value="option.value" />
             </el-select>
-            <el-input v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows, maxRows: 10 }" type="textarea" :placeholder="`请输入${item.label}`" />
+            <el-input v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows || 3, maxRows: 10 }" type="textarea" :placeholder="`请输入${item.label}`" />
             <el-input-number class="w100" v-else-if="item.type === 'number'" v-model="formData[item.prop]" :min="item.min" :max="item.max" />
             <el-date-picker
               :value-format="item.format"
@@ -39,8 +39,10 @@
               :end-placeholder="item.endPlaceholder || '结束时间'"
             />
             <distpicker ref="distpickerRef" :provinceCode="item.provinceCode" :cityCode="item.cityCode" :areaCode="item.areaCode" @change="distpickerChange" v-else-if="item.type === 'address'"></distpicker>
-            <el-upload v-else-if="item.type === 'upload'" :ref="`upload_${item.prop}`" :file-list="fileList[item.prop]" class="upload-demo" :action="uploadUrl" :on-remove="handleRemove" list-type="picture">
-              <el-button type="primary" size="small">选择文件</el-button>
+            <el-upload v-else-if="item.type === 'upload'" :limit="item.multiple ? item.limit : 1"
+              :auto-upload="false" :file-list="fileList[item.prop]" :ref="`upload_${item.prop}`"
+              :on-change="selectFileCallBack" :on-remove="removeFile" list-type="picture">
+              <el-button type="primary" size="small" @click="selectFile(item.prop, item.multiple)">选择文件</el-button>
             </el-upload>
             <el-input v-else v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
           </el-form-item>
@@ -68,6 +70,7 @@
  *    required: false, // 是否必填
  *    span: 24 // 栅格数
  *    multiple: false // 文件是否支持多选
+ *    limit: null, // 文件个数限制
  *    default: '' // 默认值
  *    provinceCode: 'provinceCode', // address 组件的省 "code" 字段名称（映射）
  *    cityCode: 'cityId', // address 组件的市 "code" 字段名称（映射）
@@ -85,6 +88,8 @@
  * @submit(data) {} // 提交事件，data 为表单内容
  * @cancel() {} // 取消事件
  */
+import { getToken } from '@/utils/auth'
+import { upload } from '@/api/file'
 import distpicker from '@/components/distpicker'
 import useGetGlobalProperties from '@/hooks/useGlobal' // 获取全局参数或方法
 import { reactive, toRaw, ref, getCurrentInstance } from 'vue'
@@ -122,11 +127,14 @@ const props = defineProps({
   }
 })
 let formData = ref({})
-const fileList = ref({})
+const fileList = reactive({})
 const emit = defineEmits(['cancel', 'submit', 'getData'])
 const formRef = ref(null)
 const rules = reactive({})
 const { proxy } = getCurrentInstance()
+const token = `Bearer ${getToken()}`
+let isMultiple = false // 是否多选文件
+let uploadStr = null // 用于记录当前上传的文件，附属于 fromData 的哪个字段
 /**
  * 初始化 "验证规则"
  */
@@ -145,17 +153,48 @@ function initRules() {
 }
 
 /**
- * 删除 "已上传" 文件
- * @param {object} file 文件
- * @param {array} fileList 文件列表
+ * 打开选择文件
+ * @param {string} str 字段名
  */
-function handleRemove(file, fileList) {}
+function selectFile(str, multiple) {
+  isMultiple = multiple
+  uploadStr = str
+  fileList[str] = fileList[str] || []
+}
+
+/**
+ * 选择文件回调
+*/
+async function selectFileCallBack(file, files) {
+  const result = await upload([file.raw])
+  if (result) {
+    updateFileData(result)
+  }
+}
+
+/**
+ * 删除文件
+*/
+function removeFile(file) {
+}
+
+/**
+ * 更新文件数组
+ */
+function updateFileData(files) {
+  fileList[uploadStr] = isMultiple ? [...fileList[uploadStr], ...files] : files
+  formData.value[uploadStr] = isMultiple ? fileList[uploadStr].reduce((total, item) => {
+    total.push((item.url))
+    return total
+  }, []) : files[0].url
+}
+
 /**
  * 表单提交
  *
  */
 async function submit() {
-  const check = await proxy.$refs.formRef.validate()
+  await proxy.$refs.formRef.validate()
   const data = toRaw(formData)
   emit('submit', data)
 }
@@ -204,6 +243,35 @@ async function getData() {
  */
 function updateData(data) {
   formData.value = data
+  updateFileList(data)
+}
+
+/**
+ * 组件初始化时，根据 updateData() 接收的参数，将 fileList 对象初始化
+*/
+function updateFileList(data) {
+  for (let i = 0; i < props.list.length; i++) {
+    const item = props.list[i]
+    const files = data[item.prop] || []
+    if (item.type === 'upload' && item.multiple) {
+      fileList[item.prop] = files.reduce((total, item) => {
+        total.push({
+          name: item.split('/').pop(),
+          status: 'success',
+          url: item,
+          ossId: new Date().getTime() // 前端临时生成
+        })
+        return total
+      }, [])
+    } else if (item.type === 'upload' && files.length > 0) {
+      fileList[item.prop] = [{
+        name: files[0].split('/').pop(),
+        status: 'success',
+        url: files[0],
+        ossId: new Date().getTime() // 前端临时生成
+      }]
+    }
+  }
 }
 
 defineExpose({

@@ -1,4 +1,4 @@
-import { ElLoading, ElMessage } from 'element-plus'
+import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 const fileBase = import.meta.fileBase
 let loadingInstance = null
 /**
@@ -158,5 +158,27 @@ export function showMsg(message, type = 'warning') {
     message,
     type,
     grouping: true
+  })
+}
+
+/**
+ *
+ * @param {string} title 标题
+ * @param {*} msg
+ * @returns
+ */
+export function confirmBox(msg, confirmText = '确定', cancelText = '取消', title = '系统提示') {
+  return new Promise((resolve, reject) => {
+    ElMessageBox.confirm(msg, title, {
+      confirmButtonText: confirmText,
+      cancelButtonText: cancelText,
+      type: 'warning'
+    })
+      .then(() => {
+        resolve(true)
+      })
+      .catch(() => {
+        reject(false)
+      })
   })
 }
