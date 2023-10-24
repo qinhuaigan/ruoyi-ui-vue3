@@ -40,10 +40,13 @@
             />
             <distpicker ref="distpickerRef" :provinceCode="item.provinceCode" :cityCode="item.cityCode" :areaCode="item.areaCode" @change="distpickerChange" v-else-if="item.type === 'address'"></distpicker>
             <el-upload v-else-if="item.type === 'upload'" :limit="item.multiple ? item.limit : 1"
+              :accept="item.accept"
               :auto-upload="false" :file-list="fileList[item.prop]" :ref="`upload_${item.prop}`"
+              :on-exceed="onExcees"
               :on-change="selectFileCallBack" :on-remove="removeFile" list-type="picture">
               <el-button type="primary" size="small" @click="selectFile(item.prop, item.multiple)">选择文件</el-button>
             </el-upload>
+            <el-input v-else-if="item.type === 'password'" type="password" show-password v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
             <el-input v-else v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
           </el-form-item>
         </el-col>
@@ -93,7 +96,7 @@ import { upload } from '@/api/file'
 import distpicker from '@/components/distpicker'
 import useGetGlobalProperties from '@/hooks/useGlobal' // 获取全局参数或方法
 import { reactive, toRaw, ref, getCurrentInstance } from 'vue'
-const { uploadUrl } = useGetGlobalProperties() // 读取全局函数/参数
+const { showMsg } = useGetGlobalProperties() // 读取全局函数/参数
 const props = defineProps({
   list: {
     type: Array,
@@ -150,6 +153,13 @@ function initRules() {
       }
     ]
   }
+}
+
+/**
+ * 文件上传数量超限
+*/
+function onExcees() {
+  showMsg('已超出文件数量限制')
 }
 
 /**
@@ -265,9 +275,9 @@ function updateFileList(data) {
       }, [])
     } else if (item.type === 'upload' && files.length > 0) {
       fileList[item.prop] = [{
-        name: files[0].split('/').pop(),
+        name: files.split('/').pop(),
         status: 'success',
-        url: files[0],
+        url: files,
         ossId: new Date().getTime() // 前端临时生成
       }]
     }

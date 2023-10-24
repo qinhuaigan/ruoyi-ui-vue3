@@ -5,7 +5,8 @@
       <el-table-column v-if="!hideIndex" type="index" label="#" :align="align" />
       <el-table-column :align="title.align || align" :label="title.label" v-for="(title, i) in props.title" :width="title.width" :key="i">
         <template #default="scope">
-          <el-image fit="cover" style="width: 100%; height: 80px" :src="getFilePath(scope.row[title.prop])" v-if="title.type === 'image'">
+          <el-avatar v-if="title.type === 'avatar'" :size="50" :src="scope.row[title.prop] ? getFilePath(scope.row[title.prop]) : defaultAvatar" />
+          <el-image fit="cover" preview-teleported :preview-src-list="[getFilePath(scope.row[title.prop])]" style="width: 100%; height: 80px" :src="getFilePath(scope.row[title.prop])" v-else-if="title.type === 'image'">
             <template #error>
               <div class="image-slot">
                 <el-icon>
@@ -20,19 +21,19 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column type="index" :width="btnsWidth" label="操作" :align="btnAlign || align" v-if="props.btns.length > 0">
+      <el-table-column type="index" :width="btnsWidth" label="操作" :align="btnAlign || align" v-if="btns.length > 0">
         <template #default="scope">
-          <div class="flex flex-wrap btns" v-if="!props.btnBlock">
-            <div class="mr10px mt10px" v-for="(btn, i) in props.btns" :key="i">
-              <el-tooltip class="box-item" v-if="showBtn(scope.row, btn)" effect="dark" :content="btn.tooltip || btn.text">
-                <el-button :icon="btn.icon" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
+          <div class="flex flex-wrap btns" v-if="!btnBlock">
+            <div v-for="(btn, i) in getBtns(scope.row)" :key="i">
+              <el-tooltip class="box-item" effect="dark" :content="btn.tooltip || btn.text">
+                <el-button :icon="btn.icon" :disabled="btn.disabled" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
               </el-tooltip>
             </div>
           </div>
           <div class="btns" v-else>
-            <div class="mt10px" v-for="(btn, i) in props.btns" :key="i">
-              <el-tooltip class="box-item" v-if="showBtn(scope.row, btn)" effect="dark" :content="btn.tooltip || btn.text">
-                <el-button :icon="btn.icon" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
+            <div class="" v-for="(btn, i) in getBtns(scope.row)" :key="i">
+              <el-tooltip class="box-item" effect="dark" :content="btn.tooltip || btn.text">
+                <el-button :icon="btn.icon" :disabled="btn.disabled" :link="btn.link" :size="btn.size || 'small'" :style="{ width: btn.width }" :type="btn.type" @click="handClick(btn, scope.row, scope.$index)">{{ btn.text }}</el-button>
               </el-tooltip>
             </div>
           </div>
@@ -76,6 +77,7 @@
  *                 // 将函数绑定在 proxy 上
  *      // handClick 映射函数示例 function handClick(fun) { proxy[fun](); }
  *      width: '', // 按钮宽度，非必填
+ *      disebled: false // 是否禁用
  *      type: '' 按钮类型，对应 element-plus 的类型：primary, warning, error, info, text 等
  *    }]
  *    btnsWidth: '150px' // 按钮列宽
@@ -86,7 +88,8 @@
  * @pageChange(pageNum, pageSize) // 切换分页，pageNum：当前页；pageSize：每页条数
  * @select(selection, row) // 表格选中事件，selection：当前 table 选中的数据集合, row：触发选中事件的 "数据项"
  */
-import { getCurrentInstance, reactive, ref, toRaw, toRefs, watch } from 'vue'
+import defaultAvatar from '@/assets/images/profile.jpg'
+import { computed, getCurrentInstance, reactive, ref, toRaw, toRefs, watch } from 'vue'
 import useGetGlobalProperties from '@/hooks/useGlobal'
 // import pagination from "@/components/Pagination";
 const { getFilePath } = useGetGlobalProperties()
@@ -167,7 +170,6 @@ const queryParams = reactive({
 })
 const { proxy } = getCurrentInstance()
 const emit = defineEmits(['handClick', 'pageChange', 'select'])
-
 onMounted(() => {
   // 组件挂载
 })
@@ -201,14 +203,12 @@ watch(
 )
 
 /**
- * 是否显示操作按钮，单条数据的各按钮显示设置
- * @param {object} row 数据
- * @param {object} btn 按钮信息
-*/
-function showBtn(row, btn) {
-  const data = toRaw(row)
-  const result = !data.hiddenBtns || (!data.hiddenBtns.includes(btn.text) && !data.hiddenBtns.includes(btn.tooltip))
-  return result
+ * 返回显示的按钮
+ */
+function getBtns(row) {
+  return props.btns.filter(item => {
+    return !row.hiddenBtns || (!row.hiddenBtns.includes(item.text) && !row.hiddenBtns.includes(item.tooltip))
+  })
 }
 
 /**
@@ -267,7 +267,7 @@ defineExpose({
 </script>
 <style lang="scss" scoped>
 .btns {
-  margin-top: -10px;
+  gap: 10px;
 }
 
 .mt10px {

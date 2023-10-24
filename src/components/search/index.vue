@@ -10,7 +10,17 @@
           <el-select v-if="item.type === 'select'" v-model="models[i]" class="m-2" :placeholder="item.placeholder || '请选择'">
             <el-option v-for="obj in item.options" :key="obj.value" :label="obj.label" :value="obj.value" />
           </el-select>
-          <el-date-picker :value-format="item.format" class="w100" v-else-if="item.type === 'date'" v-model="models[i]" :type="item.pickerType" :placeholder="item.placeholder || '请选择日期'" range-separator="-" :start-placeholder="item.startPlaceholder || '开始时间'" :end-placeholder="item.endPlaceholder || '结束时间'" />
+          <el-date-picker
+            :value-format="item.format"
+            class="w100"
+            v-else-if="item.type === 'date'"
+            v-model="models[i]"
+            :type="item.pickerType"
+            :placeholder="item.placeholder || '请选择日期'"
+            range-separator="-"
+            :start-placeholder="item.startPlaceholder || '开始时间'"
+            :end-placeholder="item.endPlaceholder || '结束时间'"
+          />
           <el-input v-else class="w100" :type="item.type" v-model="models[i]" :placeholder="item.placeholder || '请输入内容'" />
         </div>
       </div>
@@ -67,7 +77,7 @@ const models = ref([])
 
 /**
  * 重置
-*/
+ */
 function reset() {
   models.value = []
   search()
