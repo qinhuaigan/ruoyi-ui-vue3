@@ -39,11 +39,18 @@
               :end-placeholder="item.endPlaceholder || '结束时间'"
             />
             <distpicker ref="distpickerRef" :provinceCode="item.provinceCode" :cityCode="item.cityCode" :areaCode="item.areaCode" @change="distpickerChange" v-else-if="item.type === 'address'"></distpicker>
-            <el-upload v-else-if="item.type === 'upload'" :limit="item.multiple ? item.limit : 1"
+            <el-upload
+              v-else-if="item.type === 'upload'"
+              :limit="item.multiple ? item.limit : 1"
               :accept="item.accept"
-              :auto-upload="false" :file-list="fileList[item.prop]" :ref="`upload_${item.prop}`"
+              :auto-upload="false"
+              :file-list="fileList[item.prop]"
+              :ref="`upload_${item.prop}`"
               :on-exceed="onExcees"
-              :on-change="selectFileCallBack" :on-remove="removeFile" list-type="picture">
+              :on-change="selectFileCallBack"
+              :on-remove="removeFile"
+              list-type="picture"
+            >
               <el-button type="primary" size="small" @click="selectFile(item.prop, item.multiple)">选择文件</el-button>
             </el-upload>
             <el-input v-else-if="item.type === 'password'" type="password" show-password v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
@@ -81,7 +88,18 @@
  *    options: [{ // select, radio, checkbox 组件的选项
  *      label: '' // 选项名称
  *      value: '' // 选项值
- *    }]
+ *    }],
+ *    rule: {
+ *      type: '' // 类型：string, number, boolean
+ *      validator: (rule: any, value: any, callback: any) => {
+ *         if (false) {
+ *            rule.message = '校验失败' // 校验不通过的提示文字设置
+ *            callback(new Error('校验失败'))
+ *          } else {
+ *            callback() // 通过
+ *          }
+ *        } // 自定义校验函数
+ *      }
  *  }]
  * disabled: false // 禁用表单
  * submitText: '确定' // 提交按钮文字
@@ -95,7 +113,7 @@ import { getToken } from '@/utils/auth'
 import { upload } from '@/api/file'
 import distpicker from '@/components/distpicker'
 import useGetGlobalProperties from '@/hooks/useGlobal' // 获取全局参数或方法
-import { reactive, toRaw, ref, getCurrentInstance } from 'vue'
+import { reactive, toRaw, ref, getCurrentInstance, nextTick } from 'vue'
 const { showMsg } = useGetGlobalProperties() // 读取全局函数/参数
 const props = defineProps({
   list: {
@@ -143,21 +161,31 @@ let uploadStr = null // 用于记录当前上传的文件，附属于 fromData �
  */
 function initRules() {
   const data = toRaw(props.list)
+  const form = {}
   for (let i = 0; i < data.length; i++) {
     const inputType = ['input', 'textarea']
+    // 获取组件初始化数据
+    if (data[i].default) {
+      form[data[i].prop] = data[i].default
+    }
     rules[data[i].prop] = [
       {
+        type: data[i].rule && data[i].rule.type ? data[i].rule.type : null,
         trigger: ['blur', 'change'],
+        validator: data[i].rule && data[i].validator ? data[i].rule.validator : null,
         required: data[i].required,
-        message: inputType.includes(data[i].type) ? `请输入${data[i].label}` : `请选择${data[i].label}`
+        message: !data[i].rule || !data[i].rule.validator ? (inputType.includes(data[i].type) ? `请输入${data[i].label}` : `请选择${data[i].label}`) : '不符合验证规则'
       }
     ]
   }
+  nextTick(() => {
+    updateData({ ...toRaw(formData.value), ...form })
+  })
 }
 
 /**
  * 文件上传数量超限
-*/
+ */
 function onExcees() {
   showMsg('已超出文件数量限制')
 }
@@ -174,7 +202,7 @@ function selectFile(str, multiple) {
 
 /**
  * 选择文件回调
-*/
+ */
 async function selectFileCallBack(file, files) {
   const result = await upload([file.raw])
   if (result) {
@@ -184,19 +212,20 @@ async function selectFileCallBack(file, files) {
 
 /**
  * 删除文件
-*/
-function removeFile(file) {
-}
+ */
+function removeFile(file) {}
 
 /**
  * 更新文件数组
  */
 function updateFileData(files) {
   fileList[uploadStr] = isMultiple ? [...fileList[uploadStr], ...files] : files
-  formData.value[uploadStr] = isMultiple ? fileList[uploadStr].reduce((total, item) => {
-    total.push((item.url))
-    return total
-  }, []) : files[0].url
+  formData.value[uploadStr] = isMultiple
+    ? fileList[uploadStr].reduce((total, item) => {
+        total.push(item.url)
+        return total
+      }, [])
+    : files[0].url
 }
 
 /**
@@ -218,6 +247,9 @@ function distpickerChange(e) {
   formData.value = data
 }
 
+/**
+ * 表单验证
+ */
 async function checkForm() {
   return new Promise(resolve => {
     proxy.$refs.formRef
@@ -258,7 +290,7 @@ function updateData(data) {
 
 /**
  * 组件初始化时，根据 updateData() 接收的参数，将 fileList 对象初始化
-*/
+ */
 function updateFileList(data) {
   for (let i = 0; i < props.list.length; i++) {
     const item = props.list[i]
@@ -274,12 +306,16 @@ function updateFileList(data) {
         return total
       }, [])
     } else if (item.type === 'upload' && files.length > 0) {
-      fileList[item.prop] = [{
-        name: files.split('/').pop(),
-        status: 'success',
-        url: files,
-        ossId: new Date().getTime() // 前端临时生成
-      }]
+      fileList[item.prop] = [
+        {
+          name: files.split('/').pop(),
+          status: 'success',
+          url: files,
+          ossId: new Date().getTime() // 前端临时生成
+        }
+      ]
+    } else if (item.type === 'upload') {
+      fileList[item.prop] = []
     }
   }
 }

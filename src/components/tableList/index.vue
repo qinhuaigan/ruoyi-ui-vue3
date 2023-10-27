@@ -87,9 +87,10 @@
  * 组件事件
  * @pageChange(pageNum, pageSize) // 切换分页，pageNum：当前页；pageSize：每页条数
  * @select(selection, row) // 表格选中事件，selection：当前 table 选中的数据集合, row：触发选中事件的 "数据项"
+ * getSelectData(data) // 获取 table 选中的数据, data 为数组，父组件调用
  */
 import defaultAvatar from '@/assets/images/profile.jpg'
-import { computed, getCurrentInstance, reactive, ref, toRaw, toRefs, watch } from 'vue'
+import { getCurrentInstance, reactive, toRaw, toRefs, watch } from 'vue'
 import useGetGlobalProperties from '@/hooks/useGlobal'
 // import pagination from "@/components/Pagination";
 const { getFilePath } = useGetGlobalProperties()

@@ -182,3 +182,14 @@ export function confirmBox(msg, confirmText = '确定', cancelText = '取消', t
       })
   })
 }
+
+/**
+ * json 转 formdata
+ */
+export function toFormData(data) {
+  const form = new FormData()
+  for (const key in data) {
+    form.append(key, data[key])
+  }
+  return form
+}
