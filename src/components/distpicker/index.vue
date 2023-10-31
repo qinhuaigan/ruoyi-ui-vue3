@@ -18,6 +18,10 @@ const cascaderProps = {
 const emit = defineEmits(['change'])
 const codeMap = {} // name 匹配 code
 const props = defineProps({
+  changeEvent: {
+    type: String,
+    default: ''
+  },
   province: {
     type: String,
     default: null
@@ -97,7 +101,7 @@ function change(e) {
   data[props.provinceCode] = info[0]
   data[props.cityCode] = info[1]
   data[props.areaCode] = info[2]
-  emit('change', data)
+  emit('change', data, props.changeEvent)
 }
 
 /**

@@ -1,22 +1,23 @@
 <template>
   <div id="my-form">
     <!-- <input v-model="formData.companyName" /> -->
-    <el-form ref="formRef" :model="formData" :disabled="disabled" label-width="auto" :rules="rules">
+    <el-form ref="formRef" :model="formData" :disabled="disabled" :label-width="labelWidth" :rules="rules">
       <el-row :gutter="20">
         <el-col :span="item.span || 24" v-for="(item, i) in props.list" :key="i">
-          <el-form-item :label="item.label" :prop="item.prop">
+          <el-form-item :label="item.label" :prop="item.prop" @change="formChange(item.onChange, formData[item.prop])">
             <el-radio-group v-model="formData[item.prop]" v-if="item.type === 'radio'">
               <el-radio :label="option.value" v-for="(option, j) in item.options" :key="j">{{ option.label }}</el-radio>
             </el-radio-group>
-            <el-checkbox-group v-model="formData[item.prop]" v-else-if="item.type === 'checkbox'">
+            <el-checkbox-group @change="formChange(item.onChange, formData[item.prop])" v-model="formData[item.prop]" v-else-if="item.type === 'checkbox'">
               <el-checkbox :label="option.value" v-for="(option, j) in item.options" :key="j">{{ option.label }}</el-checkbox>
             </el-checkbox-group>
-            <el-select class="w100" v-else-if="item.type === 'select'" v-model="formData[item.prop]" :placeholder="`请输入${item.label}`">
+            <el-select @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'select'" v-model="formData[item.prop]" :placeholder="`请输入${item.label}`">
               <el-option v-for="(option, j) in item.options" :key="j" :label="option.label" :value="option.value" />
             </el-select>
-            <el-input v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows || 3, maxRows: 10 }" type="textarea" :placeholder="`请输入${item.label}`" />
-            <el-input-number class="w100" v-else-if="item.type === 'number'" v-model="formData[item.prop]" :min="item.min" :max="item.max" />
+            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows || 3, maxRows: 10 }" type="textarea" :placeholder="`请输入${item.label}`" />
+            <el-input-number @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'number'" v-model="formData[item.prop]" :min="item.min" :max="item.max" />
             <el-date-picker
+              @change="formChange(item.onChange, formData[item.prop])"
               :value-format="item.format"
               class="w100"
               v-else-if="item.type === 'date'"
@@ -28,6 +29,7 @@
               :end-placeholder="item.endPlaceholder || '结束时间'"
             />
             <el-time-picker
+              @change="formChange(item.onChange, formData[item.prop])"
               :value-format="item.format"
               class="w100"
               v-else-if="item.type === 'time'"
@@ -38,7 +40,7 @@
               :start-placeholder="item.startPlaceholder || '开始时间'"
               :end-placeholder="item.endPlaceholder || '结束时间'"
             />
-            <distpicker ref="distpickerRef" :provinceCode="item.provinceCode" :cityCode="item.cityCode" :areaCode="item.areaCode" @change="distpickerChange" v-else-if="item.type === 'address'"></distpicker>
+            <distpicker ref="distpickerRef" :changeEvent="item.onChange" :provinceCode="item.provinceCode" :cityCode="item.cityCode" :areaCode="item.areaCode" @change="distpickerChange" v-else-if="item.type === 'address'"></distpicker>
             <el-upload
               v-else-if="item.type === 'upload'"
               :limit="item.multiple ? item.limit : 1"
@@ -53,8 +55,8 @@
             >
               <el-button type="primary" size="small" @click="selectFile(item.prop, item.multiple)">选择文件</el-button>
             </el-upload>
-            <el-input v-else-if="item.type === 'password'" type="password" show-password v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
-            <el-input v-else v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
+            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'password'" type="password" show-password v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
+            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
           </el-form-item>
         </el-col>
         <el-col :span="24" v-if="showBtn">
@@ -89,6 +91,9 @@
  *      label: '' // 选项名称
  *      value: '' // 选项值
  *    }],
+ *    onChange: '' // 表单数据更新时，映射父组件的函数名，父组件中，定义一个 change 映射函数，如：
+ *              // handChange 映射函数示例 function handChange(fun, val, formdata) { proxy[fun](); }
+ *              // fun：函数名；val 当前 form 表单项的值；formdata：表单所有数据
  *    rule: {
  *      type: '' // 类型：string, number, boolean
  *      validator: (rule: any, value: any, callback: any) => {
@@ -101,6 +106,7 @@
  *        } // 自定义校验函数
  *      }
  *  }]
+ * labelWidth: 'auto',
  * disabled: false // 禁用表单
  * submitText: '确定' // 提交按钮文字
  * cancelText: '取消' // 取消按钮文字
@@ -121,6 +127,10 @@ const props = defineProps({
     default() {
       return []
     }
+  },
+  labelWidth: {
+    type: String,
+    default: 'auto'
   },
   showBtn: {
     type: Boolean,
@@ -149,13 +159,26 @@ const props = defineProps({
 })
 let formData = ref({})
 const fileList = reactive({})
-const emit = defineEmits(['cancel', 'submit', 'getData'])
+const emit = defineEmits(['cancel', 'submit', 'getData', 'change'])
 const formRef = ref(null)
 const rules = reactive({})
 const { proxy } = getCurrentInstance()
 const token = `Bearer ${getToken()}`
 let isMultiple = false // 是否多选文件
 let uploadStr = null // 用于记录当前上传的文件，附属于 fromData 的哪个字段
+
+/**
+ * 表单内容变化
+ * @param {string} fun 函数名称
+ * @param {*} data 数据
+ * @returns fun, formdata
+ */
+function formChange(fun, data) {
+  if (fun) {
+    emit('change', fun, data, toRaw(formData.value))
+  }
+}
+
 /**
  * 初始化 "验证规则"
  */
@@ -241,10 +264,11 @@ async function submit() {
 /**
  * address 组件 change 事件
  */
-function distpickerChange(e) {
+function distpickerChange(e, event) {
   let data = toRaw(formData.value)
   data = { ...data, ...e }
   formData.value = data
+  formChange(event, e)
 }
 
 /**
