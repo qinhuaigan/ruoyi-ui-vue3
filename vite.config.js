@@ -1,9 +1,15 @@
-import { defineConfig, loadEnv } from 'vite'
+import {
+  defineConfig,
+  loadEnv
+} from 'vite'
 import path from 'path'
 import createVitePlugins from './vite/plugins'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode, command }) => {
+export default defineConfig(({
+  mode,
+  command
+}) => {
   const env = loadEnv(mode, process.cwd())
   return {
     // 部署生产环境和开发环境下的URL。
@@ -11,6 +17,28 @@ export default defineConfig(({ mode, command }) => {
     // 例如 https://www.ruoyi.vip/。如果应用被部署在一个子路径上，你就需要用这个选项指定这个子路径。例如，如果你的应用被部署在 https://www.ruoyi.vip/admin/，则设置 baseUrl 为 /admin/。
     base: env.VITE_APP_CONTEXT_PATH,
     plugins: createVitePlugins(env, command === 'build'),
+    build: {
+      // 静态资源合并打包
+      rollupOptions: {
+        output: {
+          chunkFileNames: 'static/js/[name]-[hash].js',
+          entryFileNames: 'static/js/[name]-[hash].js',
+          assetFileNames: 'static/[ext]/[name]-[hash].[ext]',
+          // 超大静态资源拆分
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              return id
+                .toString()
+                .split('node_modules/')[1]
+                .split('/')[0]
+                .toString();
+            }
+          },
+        },
+      },
+      // 提高超大静态资源警告门槛
+      chunkSizeWarningLimit: 1000,
+    },
     resolve: {
       // https://cn.vitejs.dev/config/#resolve-alias
       alias: {
@@ -39,18 +67,16 @@ export default defineConfig(({ mode, command }) => {
     //fix:error:stdin>:7356:1: warning: "@charset" must be the first rule in the file
     css: {
       postcss: {
-        plugins: [
-          {
-            postcssPlugin: 'internal:charset-removal',
-            AtRule: {
-              charset: (atRule) => {
-                if (atRule.name === 'charset') {
-                  atRule.remove();
-                }
+        plugins: [{
+          postcssPlugin: 'internal:charset-removal',
+          AtRule: {
+            charset: (atRule) => {
+              if (atRule.name === 'charset') {
+                atRule.remove();
               }
             }
           }
-        ]
+        }]
       }
     }
   }

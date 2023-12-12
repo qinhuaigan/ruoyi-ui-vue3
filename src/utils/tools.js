@@ -1,5 +1,5 @@
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
-const fileBase = import.meta.fileBase
+const fileBase = import.meta.env.VITE_APP_FILE_BASE
 let loadingInstance = null
 /**
  * 获取文件完整路径

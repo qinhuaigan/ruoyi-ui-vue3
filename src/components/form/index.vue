@@ -120,7 +120,7 @@ import { upload } from '@/api/file'
 import distpicker from '@/components/distpicker'
 import useGetGlobalProperties from '@/hooks/useGlobal' // 获取全局参数或方法
 import { reactive, toRaw, ref, getCurrentInstance, nextTick } from 'vue'
-const { showMsg } = useGetGlobalProperties() // 读取全局函数/参数
+const { showMsg, getFilePath, deepClone } = useGetGlobalProperties() // 读取全局函数/参数
 const props = defineProps({
   list: {
     type: Array,
@@ -242,7 +242,14 @@ function removeFile(file) {}
  * 更新文件数组
  */
 function updateFileData(files) {
-  fileList[uploadStr] = isMultiple ? [...fileList[uploadStr], ...files] : files
+  const newList = files.reduce((total, item) => {
+    const obj = deepClone(item)
+    obj.name = obj.url.split('/').pop()
+    obj.url = getFilePath(obj.url)
+    total.push(obj)
+    return total
+  }, [])
+  fileList[uploadStr] = isMultiple ? [...fileList[uploadStr], ...newList] : newList
   formData.value[uploadStr] = isMultiple
     ? fileList[uploadStr].reduce((total, item) => {
         total.push(item.url)
@@ -324,7 +331,7 @@ function updateFileList(data) {
         total.push({
           name: item.split('/').pop(),
           status: 'success',
-          url: item,
+          url: getFilePath(item),
           ossId: new Date().getTime() // 前端临时生成
         })
         return total
@@ -334,7 +341,7 @@ function updateFileList(data) {
         {
           name: files.split('/').pop(),
           status: 'success',
-          url: files,
+          url: getFilePath(files),
           ossId: new Date().getTime() // 前端临时生成
         }
       ]
