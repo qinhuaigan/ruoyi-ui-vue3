@@ -11,7 +11,7 @@
             <el-checkbox-group @change="formChange(item.onChange, formData[item.prop])" v-model="formData[item.prop]" v-else-if="item.type === 'checkbox'">
               <el-checkbox :label="option.value" v-for="(option, j) in item.options" :key="j">{{ option.label }}</el-checkbox>
             </el-checkbox-group>
-            <el-select @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'select'" v-model="formData[item.prop]" :placeholder="`请输入${item.label}`">
+            <el-select :multiple="item.multiple" @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'select'" v-model="formData[item.prop]" :placeholder="`请输入${item.label}`">
               <el-option v-for="(option, j) in item.options" :key="j" :label="option.label" :value="option.value" />
             </el-select>
             <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows || 3, maxRows: 10 }" type="textarea" :placeholder="`请输入${item.label}`" />
@@ -95,7 +95,7 @@
  *              // handChange 映射函数示例 function handChange(fun, val, formdata) { proxy[fun](); }
  *              // fun：函数名；val 当前 form 表单项的值；formdata：表单所有数据
  *    rule: {
- *      type: '' // 类型：string, number, boolean
+ *      type: '' // 类型：string, number, boolean, array
  *      validator: (rule: any, value: any, callback: any) => {
  *         if (false) {
  *            rule.message = '校验失败' // 校验不通过的提示文字设置
@@ -196,7 +196,7 @@ function initRules() {
         type: data[i].rule && data[i].rule.type ? data[i].rule.type : null,
         trigger: ['blur', 'change'],
         validator: data[i].rule && data[i].validator ? data[i].rule.validator : null,
-        required: data[i].required,
+        required: data[i].required || false,
         message: !data[i].rule || !data[i].rule.validator ? (inputType.includes(data[i].type) ? `请输入${data[i].label}` : `请选择${data[i].label}`) : '不符合验证规则'
       }
     ]
