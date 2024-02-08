@@ -1,7 +1,7 @@
 <template>
   <div id="my-form">
     <!-- <input v-model="formData.companyName" /> -->
-    <el-form ref="formRef" :model="formData" :disabled="disabled" :label-width="labelWidth" :rules="rules">
+    <el-form ref="formRef" :model="formData" v-bind="attrs" :disabled="disabled" :label-width="labelWidth" :rules="rules">
       <el-row :gutter="20">
         <el-col :span="item.span || 24" v-for="(item, i) in props.list" :key="i">
           <el-form-item :label="item.label" :prop="item.prop" @change="formChange(item.onChange, formData[item.prop])">
@@ -16,43 +16,10 @@
             </el-select>
             <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows || 3, maxRows: 10 }" type="textarea" :placeholder="`请输入${item.label}`" />
             <el-input-number @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'number'" v-model="formData[item.prop]" :min="item.min" :max="item.max" />
-            <el-date-picker
-              @change="formChange(item.onChange, formData[item.prop])"
-              :value-format="item.format"
-              class="w100"
-              v-else-if="item.type === 'date'"
-              v-model="formData[item.prop]"
-              :type="item.pickerType"
-              range-separator="-"
-              :placeholder="item.placeholder || '请选择时间'"
-              :start-placeholder="item.startPlaceholder || '开始时间'"
-              :end-placeholder="item.endPlaceholder || '结束时间'"
-            />
-            <el-time-picker
-              @change="formChange(item.onChange, formData[item.prop])"
-              :value-format="item.format"
-              class="w100"
-              v-else-if="item.type === 'time'"
-              v-model="formData[item.prop]"
-              :placeholder="item.placeholder || '请选择时间'"
-              is-range
-              range-separator="-"
-              :start-placeholder="item.startPlaceholder || '开始时间'"
-              :end-placeholder="item.endPlaceholder || '结束时间'"
-            />
+            <el-date-picker @change="formChange(item.onChange, formData[item.prop])" :value-format="item.format" class="w100" v-else-if="item.type === 'date'" v-model="formData[item.prop]" :type="item.pickerType" range-separator="-" :placeholder="item.placeholder || '请选择时间'" :start-placeholder="item.startPlaceholder || '开始时间'" :end-placeholder="item.endPlaceholder || '结束时间'" />
+            <el-time-picker @change="formChange(item.onChange, formData[item.prop])" :value-format="item.format" class="w100" v-else-if="item.type === 'time'" v-model="formData[item.prop]" :placeholder="item.placeholder || '请选择时间'" is-range range-separator="-" :start-placeholder="item.startPlaceholder || '开始时间'" :end-placeholder="item.endPlaceholder || '结束时间'" />
             <distpicker ref="distpickerRef" :changeEvent="item.onChange" :provinceCode="item.provinceCode" :cityCode="item.cityCode" :areaCode="item.areaCode" @change="distpickerChange" v-else-if="item.type === 'address'"></distpicker>
-            <el-upload
-              v-else-if="item.type === 'upload'"
-              :limit="item.multiple ? item.limit : 1"
-              :accept="item.accept"
-              :auto-upload="false"
-              :file-list="fileList[item.prop]"
-              :ref="`upload_${item.prop}`"
-              :on-exceed="onExcees"
-              :on-change="selectFileCallBack"
-              :on-remove="removeFile"
-              list-type="picture"
-            >
+            <el-upload v-else-if="item.type === 'upload'" :limit="item.multiple ? item.limit : 1" :accept="item.accept" :auto-upload="false" :file-list="fileList[item.prop]" :ref="`upload_${item.prop}`" :on-exceed="onExcees" :on-change="selectFileCallBack" :on-remove="removeFile" list-type="picture">
               <el-button type="primary" size="small" @click="selectFile(item.prop, item.multiple)">选择文件</el-button>
             </el-upload>
             <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'password'" type="password" show-password v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
@@ -119,8 +86,9 @@ import { getToken } from '@/utils/auth'
 import { upload } from '@/api/file'
 import distpicker from '@/components/distpicker'
 import useGetGlobalProperties from '@/hooks/useGlobal' // 获取全局参数或方法
-import { reactive, toRaw, ref, getCurrentInstance, nextTick } from 'vue'
+import { reactive, toRaw, ref, getCurrentInstance, nextTick, useAttrs } from 'vue'
 const { showMsg, getFilePath, deepClone } = useGetGlobalProperties() // 读取全局函数/参数
+const attrs = useAttrs()
 const props = defineProps({
   list: {
     type: Array,
@@ -236,7 +204,7 @@ async function selectFileCallBack(file, files) {
 /**
  * 删除文件
  */
-function removeFile(file) {}
+function removeFile(file) { }
 
 /**
  * 更新文件数组
@@ -252,9 +220,9 @@ function updateFileData(files) {
   fileList[uploadStr] = isMultiple ? [...fileList[uploadStr], ...newList] : newList
   formData.value[uploadStr] = isMultiple
     ? fileList[uploadStr].reduce((total, item) => {
-        total.push(item.url)
-        return total
-      }, [])
+      total.push(item.url)
+      return total
+    }, [])
     : files[0].url
 }
 
@@ -320,6 +288,13 @@ function updateData(data) {
 }
 
 /**
+ * 表单验证
+*/
+function validate() {
+  return proxy.$refs.formRef.validate()
+}
+
+/**
  * 组件初始化时，根据 updateData() 接收的参数，将 fileList 对象初始化
  */
 function updateFileList(data) {
@@ -353,7 +328,8 @@ function updateFileList(data) {
 
 defineExpose({
   getData,
-  updateData
+  updateData,
+  validate
 })
 
 /**
