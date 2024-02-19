@@ -11,10 +11,10 @@
             <el-checkbox-group @change="formChange(item.onChange, formData[item.prop])" v-model="formData[item.prop]" v-else-if="item.type === 'checkbox'">
               <el-checkbox :label="option.value" v-for="(option, j) in item.options" :key="j">{{ option.label }}</el-checkbox>
             </el-checkbox-group>
-            <el-select :multiple="item.multiple" @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'select'" v-model="formData[item.prop]" :placeholder="`请输入${item.label}`">
+            <el-select :filterable="item.filterable" :remote="item.remote" :remote-method="item.remoteMethod" :multiple="item.multiple" @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'select'" v-model="formData[item.prop]" :placeholder="item.placeholder || `请选择${item.label}`">
               <el-option v-for="(option, j) in item.options" :key="j" :label="option.label" :value="option.value" />
             </el-select>
-            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows || 3, maxRows: 10 }" type="textarea" :placeholder="`请输入${item.label}`" />
+            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'textarea'" v-model="formData[item.prop]" :autosize="{ minRows: item.rows || 3, maxRows: 10 }" type="textarea" :placeholder="item.placeholder || `请输入${item.label}`" />
             <el-input-number @change="formChange(item.onChange, formData[item.prop])" class="w100" v-else-if="item.type === 'number'" v-model="formData[item.prop]" :min="item.min" :max="item.max" />
             <el-date-picker @change="formChange(item.onChange, formData[item.prop])" :value-format="item.format" class="w100" v-else-if="item.type === 'date'" v-model="formData[item.prop]" :type="item.pickerType" range-separator="-" :placeholder="item.placeholder || '请选择时间'" :start-placeholder="item.startPlaceholder || '开始时间'" :end-placeholder="item.endPlaceholder || '结束时间'" />
             <el-time-picker @change="formChange(item.onChange, formData[item.prop])" :value-format="item.format" class="w100" v-else-if="item.type === 'time'" v-model="formData[item.prop]" :placeholder="item.placeholder || '请选择时间'" is-range range-separator="-" :start-placeholder="item.startPlaceholder || '开始时间'" :end-placeholder="item.endPlaceholder || '结束时间'" />
@@ -22,8 +22,8 @@
             <el-upload v-else-if="item.type === 'upload'" :limit="item.multiple ? item.limit : 1" :accept="item.accept" :auto-upload="false" :file-list="fileList[item.prop]" :ref="`upload_${item.prop}`" :on-exceed="onExcees" :on-change="selectFileCallBack" :on-remove="removeFile" list-type="picture">
               <el-button type="primary" size="small" @click="selectFile(item.prop, item.multiple)">选择文件</el-button>
             </el-upload>
-            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'password'" type="password" show-password v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
-            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else v-model="formData[item.prop]" :placeholder="`请输入${item.label}`" />
+            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else-if="item.type === 'password'" type="password" show-password v-model="formData[item.prop]" :placeholder="item.placeholder || `请输入${item.label}`" />
+            <el-input @change="formChange(item.onChange, formData[item.prop])" v-else v-model="formData[item.prop]" :placeholder="item.placeholder || `请输入${item.label}`" />
           </el-form-item>
         </el-col>
         <el-col :span="24" v-if="showBtn">
@@ -51,9 +51,16 @@
  *    multiple: false // 文件是否支持多选
  *    limit: null, // 文件个数限制
  *    default: '' // 默认值
+ *    placeholder: '', // 提示文字
  *    provinceCode: 'provinceCode', // address 组件的省 "code" 字段名称（映射）
  *    cityCode: 'cityId', // address 组件的市 "code" 字段名称（映射）
  *    areaCode: 'areaId' // address 组件的区 "code" 字段名称（映射）
+ *    filterable: false // 是否支持过滤
+ *    remote: false, // 其中的选项是否从服务器远程加载
+ *    remote-method: funtion(query) {
+ *      // 如果支持远程搜索，则 list 需使用 ref 定义，options 选择用 ref 定义，便于重新赋值，例：
+ *      options.value = ref([{label: '', value: ''}])
+ *    },	//自定义远程搜索方法	
  *    options: [{ // select, radio, checkbox 组件的选项
  *      label: '' // 选项名称
  *      value: '' // 选项值
