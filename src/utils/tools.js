@@ -1,4 +1,8 @@
-import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
+import {
+  ElLoading,
+  ElMessage,
+  ElMessageBox
+} from 'element-plus'
 const fileBase = import.meta.env.VITE_APP_FILE_BASE
 let loadingInstance = null
 /**
@@ -77,12 +81,12 @@ export function numFormat(num) {
 // func 是事件处理程序，delay 是事件执行的延迟时间，单位：毫秒
 export function debounce(func, delay) {
   let timer = null
-  return function () {
+  return function() {
     const that = this
     const args = arguments
     // 每次触发事件 都把定时器清掉重新计时
     clearTimeout(timer)
-    timer = setTimeout(function () {
+    timer = setTimeout(function() {
       // 执行事件处理程序
       func.call(that, args)
     }, delay)
@@ -170,10 +174,10 @@ export function showMsg(message, type = 'warning') {
 export function confirmBox(msg, confirmText = '确定', cancelText = '取消', title = '系统提示') {
   return new Promise((resolve, reject) => {
     ElMessageBox.confirm(msg, title, {
-      confirmButtonText: confirmText,
-      cancelButtonText: cancelText,
-      type: 'warning'
-    })
+        confirmButtonText: confirmText,
+        cancelButtonText: cancelText,
+        type: 'warning'
+      })
       .then(() => {
         resolve(true)
       })
@@ -228,4 +232,27 @@ export function formatDate(value, type) {
     })
   }
   return fmt
+}
+
+/**
+ * 扁平数组转树形
+ * @param {array} flatData 扁平数组
+ * @param {number | string} firstParent 最外层父级 id 值，默认为 0
+ * @param {string} [parentKey='parentId'] 父级关键 key，默认为 parentId
+ * @param {string} [key='id'] 子级关键 key，默认为 id
+ */
+export function convertToTree(flatData, firstParent = 0, parentKey = 'parentId', key = 'id') {
+  function toTree(flatData, parentId = null) {
+    const children = flatData.filter(
+      (node) => node[parentKey] === parentId
+    )
+    if (!children.length) {
+      return null
+    }
+    return children.map((node) => ({
+      ...node,
+      children: toTree(flatData, node[key])
+    }))
+  }
+  return toTree(flatData, firstParent)
 }
