@@ -33,7 +33,7 @@
         <el-col :span="24" v-if="showBtn">
           <el-form-item>
             <div class="w100" :class="[`text-${props.btnPosition}`]">
-              <el-button>{{ props.cancelText }}</el-button>
+              <el-button @click="cancel()">{{ props.cancelText }}</el-button>
               <el-button type="primary" @click="submit()">{{ props.submitText }}</el-button>
             </div>
           </el-form-item>
